@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.table-projet {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-projet th,
+.table-projet td {
+    text-align: center;
+    padding: 8px;
+}
+
+.table-projet th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+}
+
+/* @layer components {
+    a {
+        @apply inline-flex items-center rounded-md bg-slate-800 px-4 py-2 
+        text-sm font-medium text-white shadow-sm hover :bg-slate-700; 
+    }
+} */
