@@ -52,7 +52,7 @@
                                 <th class="px-4 py-3">Étape modèle</th>
                                 <th class="px-4 py-3">Titre</th>
                                 <th class="px-4 py-3">Statut</th>
-                                <th class="px-4 py-3">Actions</th>
+                                <th class="p-3 text-center w-40">Actions</th>
                             </tr>
                         </thead>
 
@@ -79,32 +79,27 @@
                                         <x-ui.badge :value="$enfant->statut" />
                                     </td>
 
+                                    <td class="p-3 text-center w-40 align-middle">
+                                        <select
+                                            class="sous-etape-action-select rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            data-edit-url="{{ route('projets.etapes.edit', [$projet->id, $enfant->id]) }}"
+                                            data-delete-form-id="delete-sous-etape-{{ $enfant->id }}"
+                                        >
+                                            <option value="">Actions...</option>
+                                            <option value="edit">Modifier</option>
+                                            <option value="delete">Supprimer</option>
+                                        </select>
 
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-3">
-
-
-                                            <x-ui.action-link
-                                                :href="route('projets.etapes.edit', [$projet, $enfant])">
-                                                Modifier
-                                            </x-ui.action-link>
-
-
-                                            <form method="POST"
-                                                action="{{ route('projets.etapes.destroy', [$projet, $enfant]) }}"
-                                                onsubmit="return confirm('Supprimer cette sous-étape ?');">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit" class="text-red-600 hover:underline">
-                                                    Supprimer
-                                                </button>
-                                            </form>
-
-                                        </div>
-                                    </td>
-
-
+                                        <form
+                                            id="delete-sous-etape-{{ $enfant->id }}"
+                                            method="POST"
+                                            action="{{ route('projets.etapes.destroy', [$projet->id, $enfant->id]) }}"
+                                            class="hidden"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                    </td>                              
                                 </tr>
                             @endforeach
                         </tbody>
@@ -113,7 +108,6 @@
 
 
             </x-ui.card>
-
 
             {{-- DOCUMENTS --}}
             <x-ui.card title="Documents">
@@ -135,7 +129,6 @@
                                     <th class="p-3">Titre</th>
                                     <th class="p-3">Statut</th>
                                     <th class="p-3 text-center">Version</th>
-                                    <th class="p-3">Commentaires</th>
                                     <th class="p-3">Fichier</th>
                                     <th class="p-3 text-center w-40">Actions</th>
                                 </tr>
@@ -143,6 +136,10 @@
 
                             <tbody class="align-top">
                                 @foreach($etape->documents as $document)
+                                    @php
+                                        $versions = $document->versions->sortByDesc('numero_version')->values();
+                                        $versionSelectionneeParDefaut = $versions->first();
+                                    @endphp
 
                                     {{-- Ligne principale --}}
                                     <tr class="border-t border-gray-200">
@@ -155,23 +152,27 @@
                                         </td>
 
                                         <td class="p-3 text-gray-700 text-center">
-                                            @if($document->versionCourante)
-                                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                                                    v{{ $document->versionCourante->numero_version }}
-                                                </span>
+                                            @if($versions->isNotEmpty())
+                                                <select
+                                                    class="document-version-select rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                    data-document-id="{{ $document->id }}"
+                                                >
+                                                    @foreach($versions as $version)
+                                                        <option value="{{ $version->id }}">
+                                                            v{{ $version->numero_version }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             @else
                                                 <span class="text-gray-400">—</span>
                                             @endif
                                         </td>
 
-                                        <td class="p-3 text-gray-700">
-                                            {{ $document->commentaires->count() }}
-                                        </td>
-
                                         <td class="p-3">
-                                            @if($document->versionCourante)
-                                                <a href="{{ route('documents.download', $document->versionCourante->id) }}"
-                                                class="text-blue-600 hover:underline">
+                                            @if($versionSelectionneeParDefaut)
+                                                <a href="{{ route('documents.download', $versionSelectionneeParDefaut->id) }}"
+                                                class="document-main-download-link text-blue-600 hover:underline"
+                                                data-document-id="{{ $document->id }}">
                                                     Télécharger
                                                 </a>
                                             @else
@@ -209,16 +210,21 @@
                                         </td>
                                     </tr>
 
-                                    {{-- Historique --}}
+                                    {{-- Détail de la version sélectionnée --}}
                                     <tr>
                                         <td colspan="6" class="px-3 pb-4">
                                             <div class="rounded-xl bg-gray-50 p-4 border border-gray-100">
                                                 <p class="mb-3 text-sm font-semibold text-gray-700">
-                                                    Historique des versions
+                                                    Détail de la version sélectionnée
                                                 </p>
 
-                                                <div class="space-y-3">
-                                                    @forelse($document->versions as $version)
+                                                @forelse($versions as $index => $version)
+                                                    <div
+                                                        class="document-version-detail {{ $index === 0 ? '' : 'hidden' }}"
+                                                        data-document-id="{{ $document->id }}"
+                                                        data-version-id="{{ $version->id }}"
+                                                        data-download-url="{{ route('documents.download', $version->id) }}"
+                                                    >
                                                         <div class="rounded-lg border border-gray-200 bg-white p-3">
                                                             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                                                                 <div class="min-w-0">
@@ -241,31 +247,25 @@
                                                                         @endif
                                                                     </div>
 
-                                                                    @if($version->commentaire_version)
-                                                                        <div class="mt-2 text-sm text-gray-600">
-                                                                            {{ $version->commentaire_version }}
-                                                                        </div>
-                                                                    @endif
                                                                 </div>
 
-                                                                <div class="shrink-0">
+                                                                <!-- <div class="shrink-0">
                                                                     <a href="{{ route('documents.download', $version->id) }}"
                                                                     class="text-sm font-medium text-blue-600 hover:underline">
                                                                         Télécharger cette version
                                                                     </a>
-                                                                </div>
+                                                                </div> -->
                                                             </div>
                                                         </div>
-                                                    @empty
-                                                        <p class="text-sm text-gray-500">
-                                                            Aucune version disponible.
-                                                        </p>
-                                                    @endforelse
-                                                </div>
+                                                    </div>
+                                                @empty
+                                                    <p class="text-sm text-gray-500">
+                                                        Aucune version disponible.
+                                                    </p>
+                                                @endforelse
                                             </div>
                                         </td>
                                     </tr>
-
                                 @endforeach
                             </tbody>
                         </table>
@@ -273,132 +273,77 @@
                 @endif
 
             </x-ui.card>
-
-            <x-ui.card
-                title="Commentaires"
-                subtitle="Échanges liés à cette sous-étape."
-            >
-                <form
-                    method="POST"
-                    action="{{ route('etapes.commentaires.store', [$projet->id, $etape->id]) }}"
-                    class="mb-6 space-y-3"
-                >
-                    @csrf
-
-                    <div>
-                        <label for="contenu" class="block text-sm font-medium text-gray-700">
-                            Nouveau commentaire
-                        </label>
-                        <textarea
-                            name="contenu"
-                            id="contenu"
-                            rows="4"
-                            class="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="Écrire un commentaire sur cette sous-étape..."
-                            required
-                        >{{ old('contenu') }}</textarea>
-                    </div>
-
-                    @error('contenu')
-                        <p class="text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-
-                    <div class="flex justify-end">
-                        <x-ui.button type="submit" variant="success">
-                            Publier le commentaire
-                        </x-ui.button>
-                    </div>
-                </form>
-
-                @if($etape->commentaires->isEmpty())
-                    <p class="text-sm text-gray-500">
-                        Aucun commentaire pour le moment.
-                    </p>
-                @else
-                    <div class="space-y-3">
-                        @foreach($etape->commentaires as $commentaire)
-                            <div class="rounded-lg border border-gray-200 bg-white p-4">
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
-                                    </div>
-
-                                    <div class="text-xs text-gray-500">
-                                        {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
-                                    </div>
-                                </div>
-
-                                <div class="mt-2 text-sm text-gray-700 whitespace-pre-line">
-                                    {{ $commentaire->contenu }}
-                                </div>
-
-                                <div class="mt-3 flex gap-3">
-                                    @if(auth()->id() === $commentaire->user_id)
-                                        <button
-                                            type="button"
-                                            onclick="document.getElementById('edit-commentaire-{{ $commentaire->id }}').classList.toggle('hidden')"
-                                            class="text-sm text-blue-600 hover:underline"
-                                        >
-                                            Modifier
-                                        </button>
-                                    @endif
-
-                                    @if(auth()->id() === $commentaire->user_id || auth()->user()?->estAdmin())
-                                        <form
-                                            method="POST"
-                                            action="{{ route('etapes.commentaires.destroy', [$projet->id, $etape->id, $commentaire->id]) }}"
-                                            onsubmit="return confirm('Supprimer ce commentaire ?');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="text-sm text-red-600 hover:underline">
-                                                Supprimer
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-
-                                @if(auth()->id() === $commentaire->user_id)
-                                    <div id="edit-commentaire-{{ $commentaire->id }}" class="hidden mt-4">
-                                        <form
-                                            method="POST"
-                                            action="{{ route('etapes.commentaires.update', [$projet->id, $etape->id, $commentaire->id]) }}"
-                                            class="space-y-3"
-                                        >
-                                            @csrf
-                                            @method('PUT')
-
-                                            <textarea
-                                                name="contenu"
-                                                rows="4"
-                                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                required
-                                            >{{ old('contenu', $commentaire->contenu) }}</textarea>
-
-                                            <div class="flex justify-end gap-3">
-                                                <button
-                                                    type="button"
-                                                    onclick="document.getElementById('edit-commentaire-{{ $commentaire->id }}').classList.add('hidden')"
-                                                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                                >
-                                                    Annuler
-                                                </button>
-
-                                                <x-ui.button type="submit" variant="success">
-                                                    Enregistrer
-                                                </x-ui.button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-
-            </x-ui.card>
+            
 
         </div>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // =========================
+        // Documents : changement de version
+        // =========================
+        const selects = document.querySelectorAll('.document-version-select');
+
+        selects.forEach(select => {
+            select.addEventListener('change', function () {
+                const documentId = this.dataset.documentId;
+                const selectedVersionId = this.value;
+
+                const details = document.querySelectorAll(
+                    '.document-version-detail[data-document-id="' + documentId + '"]'
+                );
+
+                details.forEach(detail => {
+                    if (detail.dataset.versionId === selectedVersionId) {
+                        detail.classList.remove('hidden');
+                    } else {
+                        detail.classList.add('hidden');
+                    }
+                });
+
+                const selectedDetail = document.querySelector(
+                    '.document-version-detail[data-document-id="' + documentId + '"][data-version-id="' + selectedVersionId + '"]'
+                );
+
+                const mainDownloadLink = document.querySelector(
+                    '.document-main-download-link[data-document-id="' + documentId + '"]'
+                );
+
+                if (selectedDetail && mainDownloadLink) {
+                    mainDownloadLink.href = selectedDetail.dataset.downloadUrl;
+                }
+            });
+        });
+
+        // =========================
+        // Sous-étapes : actions via select
+        // =========================
+        const actionSelects = document.querySelectorAll('.sous-etape-action-select');
+
+        actionSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const action = this.value;
+
+                if (action === 'edit') {
+                    window.location.href = this.dataset.editUrl;
+                    return;
+                }
+
+                if (action === 'delete') {
+                    const ok = confirm('Supprimer cette sous-étape ?');
+
+                    if (ok) {
+                        const form = document.getElementById(this.dataset.deleteFormId);
+                        if (form) {
+                            form.submit();
+                            return;
+                        }
+                    }
+                }
+
+                this.value = '';
+            });
+        });
+    });
+    </script>
 </x-app-layout>
