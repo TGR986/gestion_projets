@@ -6,6 +6,8 @@ use App\Models\Projet;
 use App\Models\ProjetEtape;
 use App\Models\EtapeModele;
 use Illuminate\Http\Request;
+use App\Models\EtapeCommentaire;
+use Illuminate\Support\Facades\Auth;
 
 class EtapeController extends Controller
 {
@@ -176,9 +178,97 @@ class EtapeController extends Controller
             'documents.versionCourante',
             'documents.commentaires',
             'documents.versions.deposant',
+
+            'commentaires.auteur',
         ]);
 
 
         return view('projets.etapes.show', compact('projet', 'etape'));
+    }
+
+    public function storeCommentaire(Request $request, $projetId, $etapeId)
+    {
+        $projet = Projet::findOrFail($projetId);
+        $etape = ProjetEtape::findOrFail($etapeId);
+
+        abort_unless($etape->projet_id === $projet->id, 404);
+
+        $data = $request->validate([
+            'contenu' => ['required', 'string', 'max:5000'],
+        ]);
+
+        EtapeCommentaire::create([
+            'projet_etape_id' => $etape->id,
+            'user_id' => Auth::id(),
+            'contenu' => $data['contenu'],
+        ]);
+
+        return redirect()
+            ->route('projets.etapes.show', [$projet, $etape])
+            ->with('success', 'Commentaire ajouté avec succès.');
+    }
+
+    private function peutModifierCommentaire(\App\Models\EtapeCommentaire $commentaire): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->id === $commentaire->user_id;
+    }
+
+    private function peutSupprimerCommentaire(\App\Models\EtapeCommentaire $commentaire): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->id === $commentaire->user_id || $user->estAdmin();
+    }
+
+    public function updateCommentaire(Request $request, $projetId, $etapeId, $commentaireId)
+    {
+        $projet = Projet::findOrFail($projetId);
+        $etape = ProjetEtape::findOrFail($etapeId);
+        $commentaire = \App\Models\EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($etape->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === $etape->id, 404);
+        abort_unless($this->peutModifierCommentaire($commentaire), 403);
+
+        $data = $request->validate([
+            'contenu' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $commentaire->update([
+            'contenu' => $data['contenu'],
+        ]);
+
+        return redirect()
+            ->route('projets.etapes.show', [$projet, $etape])
+            ->with('success', 'Commentaire modifié avec succès.');
+    }
+
+    public function destroyCommentaire($projetId, $etapeId, $commentaireId)
+    {
+        $projet = Projet::findOrFail($projetId);
+        $etape = ProjetEtape::findOrFail($etapeId);
+        $commentaire = \App\Models\EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($etape->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === $etape->id, 404);
+        abort_unless($this->peutSupprimerCommentaire($commentaire), 403);
+
+        $commentaire->delete();
+
+        return redirect()
+            ->route('projets.etapes.show', [$projet, $etape])
+            ->with('success', 'Commentaire supprimé avec succès.');
     }
 }

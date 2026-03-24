@@ -55,4 +55,10 @@ class ProjetEtape extends Model
         return $this->hasMany(Document::class, 'projet_etape_id')
             ->orderByDesc('date_creation');
     }
+
+    public function commentaires()
+    {
+        return $this->hasMany(EtapeCommentaire::class, 'projet_etape_id')
+            ->latest();
+    }
 }

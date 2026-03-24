@@ -197,4 +197,44 @@ class DocumentController extends Controller
             ->with('success', 'Nouvelle version ajoutée avec succès.');
     }
 
+    public function destroy($documentId)
+    {
+        $document = Document::with('versions')->findOrFail($documentId);
+
+        // Sécurité minimale : admin uniquement
+        abort_unless(Auth::check() && Auth::user()->estAdmin(), 403);
+
+        $projetId = $document->projet_id;
+        $etapeId = $document->projet_etape_id;
+
+        foreach ($document->versions as $version) {
+            $relativePath = ltrim((string) $version->chemin_fichier, '/');
+
+            $candidats = [
+                storage_path('app/private/' . $relativePath),
+                storage_path('app/' . $relativePath),
+            ];
+
+            if (str_starts_with($relativePath, 'private/')) {
+                $sansPrivate = preg_replace('#^private/#', '', $relativePath);
+                $candidats[] = storage_path('app/private/' . $sansPrivate);
+                $candidats[] = storage_path('app/' . $sansPrivate);
+            }
+
+            foreach ($candidats as $path) {
+                if (file_exists($path)) {
+                    @unlink($path);
+                    break;
+                }
+            }
+        }
+
+        $document->versions()->delete();
+        $document->delete();
+
+        return redirect()
+            ->route('projets.etapes.show', [$projetId, $etapeId])
+            ->with('success', 'Document supprimé avec succès.');
+    }
+
 }

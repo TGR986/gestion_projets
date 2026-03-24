@@ -61,6 +61,15 @@ Route::middleware(['auth'])->group(function () {
     // Voir une étape
     Route::get('/projets/{projet}/etapes/{etape}', [EtapeController::class, 'show'])
         ->name('projets.etapes.show');
+
+    Route::post('/projets/{projet}/etapes/{etape}/commentaires', [EtapeController::class, 'storeCommentaire'])
+    ->name('etapes.commentaires.store');
+
+    Route::put('/projets/{projet}/etapes/{etape}/commentaires/{commentaire}', [EtapeController::class, 'updateCommentaire'])
+    ->name('etapes.commentaires.update');
+
+    Route::delete('/projets/{projet}/etapes/{etape}/commentaires/{commentaire}', [EtapeController::class, 'destroyCommentaire'])
+    ->name('etapes.commentaires.destroy');
     
     /*
     |--------------------------------------------------------------------------
@@ -81,6 +90,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/documents/{document}/versions', [DocumentController::class, 'storeVersion'])
     ->name('documents.versions.store');
+
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])
+    ->name('documents.destroy');
 
     /*
     |--------------------------------------------------------------------------
