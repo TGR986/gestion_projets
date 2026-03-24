@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjetController;
 use App\Http\Controllers\EtapeController;
+use App\Http\Controllers\DocumentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -60,6 +61,26 @@ Route::middleware(['auth'])->group(function () {
     // Voir une étape
     Route::get('/projets/{projet}/etapes/{etape}', [EtapeController::class, 'show'])
         ->name('projets.etapes.show');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTS
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/documents/{version}/download', [DocumentController::class, 'download'])
+        ->name('documents.download');
+
+    Route::get('/projets/{projet}/etapes/{etape}/documents/create', [DocumentController::class, 'create'])
+    ->name('documents.create');
+
+    Route::post('/projets/{projet}/etapes/{etape}/documents', [DocumentController::class, 'store'])
+    ->name('documents.store');
+
+    Route::get('/documents/{document}/versions/create', [DocumentController::class, 'createVersion'])
+    ->name('documents.versions.create');
+
+    Route::post('/documents/{document}/versions', [DocumentController::class, 'storeVersion'])
+    ->name('documents.versions.store');
 
     /*
     |--------------------------------------------------------------------------

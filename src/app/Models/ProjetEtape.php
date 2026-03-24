@@ -49,4 +49,10 @@ class ProjetEtape extends Model
             ->orderBy('ordre_reel')
             ->orderBy('id');
     }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'projet_etape_id')
+            ->orderByDesc('date_creation');
+    }
 }

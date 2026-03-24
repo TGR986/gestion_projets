@@ -171,6 +171,11 @@ class EtapeController extends Controller
             'validateur',
             'enfants.etapeModele',
             'enfants.validateur',
+
+            // 🔽 DOCUMENTS
+            'documents.versionCourante',
+            'documents.commentaires',
+            'documents.versions.deposant',
         ]);
 
 
