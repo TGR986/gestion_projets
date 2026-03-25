@@ -65,6 +65,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/projets/{projet}/etapes/{etape}/commentaires', [EtapeController::class, 'storeCommentaire'])
     ->name('etapes.commentaires.store');
 
+    Route::get('/projets/{projet}/etapes/{etape}/commentaires/{commentaire}/edit', [EtapeController::class, 'editCommentaire'])
+    ->name('etapes.commentaires.edit');
+
     Route::put('/projets/{projet}/etapes/{etape}/commentaires/{commentaire}', [EtapeController::class, 'updateCommentaire'])
     ->name('etapes.commentaires.update');
 

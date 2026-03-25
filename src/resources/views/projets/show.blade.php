@@ -3,7 +3,7 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold text-gray-900">
-                    {{ $projet->intitule }}
+                   Projet : {{ $projet->intitule }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
                     Consultez le projet, ses étapes, ses participants et ses actions de gestion.

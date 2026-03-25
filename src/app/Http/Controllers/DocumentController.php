@@ -6,9 +6,9 @@ use App\Models\Projet;
 use App\Models\ProjetEtape;
 use App\Models\Document;
 use App\Models\DocumentVersion;
+use App\Models\TypeDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Models\TypeDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ class DocumentController extends Controller
 {
     public function download($id)
     {
-        $version = DocumentVersion::findOrFail($id);
+        $version = DocumentVersion::with('document')->findOrFail($id);
 
         $document = $version->document;
         abort_unless($document, 404);
@@ -56,9 +56,8 @@ class DocumentController extends Controller
     public function create($projetId, $etapeId)
     {
         $projet = Projet::findOrFail($projetId);
-        $etape = ProjetEtape::findOrFail($etapeId);
+        $etape = ProjetEtape::with(['parent', 'etapeModele'])->findOrFail($etapeId);
 
-        // Sécurité : vérifier que l'étape appartient bien au projet
         abort_unless($etape->projet_id === $projet->id, 404);
 
         $typesDocuments = TypeDocument::orderBy('libelle')->get();
@@ -69,7 +68,7 @@ class DocumentController extends Controller
     public function store(Request $request, $projetId, $etapeId)
     {
         $projet = Projet::findOrFail($projetId);
-        $etape = ProjetEtape::findOrFail($etapeId);
+        $etape = ProjetEtape::with('parent')->findOrFail($etapeId);
 
         abort_unless($etape->projet_id === $projet->id, 404);
 
@@ -88,8 +87,8 @@ class DocumentController extends Controller
 
         $nomStocke = (string) Str::uuid() . ($extension ? '.' . $extension : '');
 
-        // Stockage réel dans storage/app/private/documents
-        $cheminStocke = $fichier->storeAs('/documents', $nomStocke);
+        // stockage dans storage/app/private/documents
+        $cheminStocke = $fichier->storeAs('documents', $nomStocke);
 
         $document = Document::create([
             'projet_id' => $projet->id,
@@ -117,7 +116,7 @@ class DocumentController extends Controller
         ]);
 
         return redirect()
-            ->route('projets.etapes.show', [$projet, $etape])
+            ->route('projets.etapes.show', [$projet->id, $etape->id])
             ->with('success', 'Document ajouté avec succès.');
     }
 
@@ -135,7 +134,7 @@ class DocumentController extends Controller
 
     public function storeVersion(Request $request, $documentId)
     {
-        $document = Document::with('versions')->findOrFail($documentId);
+        $document = Document::with(['versions', 'etape', 'projet'])->findOrFail($documentId);
 
         $data = $request->validate([
             'fichier' => ['required', 'file', 'max:10240'],
@@ -199,9 +198,8 @@ class DocumentController extends Controller
 
     public function destroy($documentId)
     {
-        $document = Document::with('versions')->findOrFail($documentId);
+        $document = Document::with(['versions', 'etape'])->findOrFail($documentId);
 
-        // Sécurité minimale : admin uniquement
         abort_unless(Auth::check() && Auth::user()->estAdmin(), 403);
 
         $projetId = $document->projet_id;
@@ -236,5 +234,4 @@ class DocumentController extends Controller
             ->route('projets.etapes.show', [$projetId, $etapeId])
             ->with('success', 'Document supprimé avec succès.');
     }
-
 }

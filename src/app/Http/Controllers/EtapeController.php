@@ -162,26 +162,33 @@ class EtapeController extends Controller
     {
         $this->authorize('view', $projet);
 
-
-        // sécurité : vérifier que l’étape appartient bien au projet
         abort_unless($etape->projet_id === $projet->id, 404);
 
+        // CAS 1 : sous-étape
+        if ($etape->parent_id) {
+            $etape->load([
+                'projet',
+                'parent.etapeModele',
+                'etapeModele',
+                'validateur',
 
-        // charger les relations utiles
+                'documents.versionCourante',
+                'documents.commentaires',
+                'documents.versions.deposant',
+
+                'commentaires.auteur',
+            ]);
+
+            return view('projets.sous_etapes.show', compact('projet', 'etape'));
+        }
+
+        // CAS 2 : étape principale
         $etape->load([
             'etapeModele',
             'validateur',
             'enfants.etapeModele',
             'enfants.validateur',
-
-            // 🔽 DOCUMENTS
-            'documents.versionCourante',
-            'documents.commentaires',
-            'documents.versions.deposant',
-
-            'commentaires.auteur',
         ]);
-
 
         return view('projets.etapes.show', compact('projet', 'etape'));
     }
@@ -230,6 +237,19 @@ class EtapeController extends Controller
         }
 
         return $user->id === $commentaire->user_id || $user->estAdmin();
+    }
+
+    public function editCommentaire($projetId, $etapeId, $commentaireId)
+    {
+        $projet = Projet::findOrFail($projetId);
+        $etape = ProjetEtape::findOrFail($etapeId);
+        $commentaire = EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($etape->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === $etape->id, 404);
+        abort_unless($this->peutModifierCommentaire($commentaire), 403);
+
+        return view('etapes.commentaires.edit', compact('projet', 'etape', 'commentaire'));
     }
 
     public function updateCommentaire(Request $request, $projetId, $etapeId, $commentaireId)

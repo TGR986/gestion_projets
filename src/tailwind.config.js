@@ -28,6 +28,13 @@ export default {
         'py-1',
         'text-xs',
         'inline-block',
+        'bg-purple-600',
+        'hover:bg-purple-700',
+        'bg-amber-500',
+        'hover:bg-amber-600',
+        'bg-gray-700',
+        'hover:bg-gray-800',
+        
     ],
 
     theme: {
