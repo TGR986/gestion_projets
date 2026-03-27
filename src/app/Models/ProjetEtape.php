@@ -13,11 +13,12 @@ class ProjetEtape extends Model
         'parent_id',
         'etape_modele_id',
         'titre_personnalise',
-        'statut',
         'ordre_reel',
+        'statut',
         'date_ouverture',
         'date_cloture',
         'validee_par',
+        'motif_refus',
     ];
 
     const CREATED_AT = null;

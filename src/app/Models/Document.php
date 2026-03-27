@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Document extends Model
 {
@@ -17,6 +18,10 @@ class Document extends Model
         'description',
         'statut_document',
         'cree_par',
+        'type_validation',
+        'commentaire_validation',
+        'valide_par',
+        'date_validation',
     ];
 
     public $timestamps = true;
@@ -24,17 +29,22 @@ class Document extends Model
     const CREATED_AT = 'date_creation';
     const UPDATED_AT = 'date_modification';
 
-    public function projet()
+    public function projet(): BelongsTo
     {
         return $this->belongsTo(Projet::class, 'projet_id');
     }
 
-    public function etape()
+    public function etape(): BelongsTo
     {
         return $this->belongsTo(ProjetEtape::class, 'projet_etape_id');
     }
 
-    public function versions()
+    public function typeDocument(): BelongsTo
+    {
+        return $this->belongsTo(TypeDocument::class, 'type_document_id');
+    }
+
+    public function versions(): HasMany
     {
         return $this->hasMany(DocumentVersion::class, 'document_id')
             ->orderByDesc('numero_version');
@@ -46,19 +56,19 @@ class Document extends Model
             ->where('est_version_courante', 1);
     }
 
-    public function commentaires()
+    public function commentaires(): HasMany
     {
         return $this->hasMany(DocumentCommentaire::class, 'document_id')
             ->orderByDesc('date_commentaire');
     }
 
-    public function validations()
+    public function validations(): HasMany
     {
         return $this->hasMany(DocumentValidation::class, 'document_id')
             ->orderByDesc('date_decision');
     }
 
-    public function createur()
+    public function createur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cree_par');
     }

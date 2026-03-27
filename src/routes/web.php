@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjetController;
 use App\Http\Controllers\EtapeController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -97,6 +98,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])
     ->name('documents.destroy');
 
+    Route::post('/document-versions/{version}/validation', [DocumentController::class, 'validerVersion'])
+    ->name('documents.versions.validation');
+
     /*
     |--------------------------------------------------------------------------
     | PROJET (APRES ETAPES)
@@ -120,5 +124,36 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/projets/{projet}/participants/{participant}', [ProjetController::class, 'destroyParticipant'])
         ->name('projets.participants.destroy');
+
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | UTILISATEURS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/users', [UserController::class, 'index'])
+        ->name('users.index');
+
+    Route::get('/users/create', [UserController::class, 'create'])
+        ->name('users.create');
+
+    Route::post('/users', [UserController::class, 'store'])
+        ->name('users.store');
+
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+        ->name('users.edit');
+
+    Route::put('/users/{user}', [UserController::class, 'update'])
+        ->name('users.update');
+
+    Route::patch('/users/{user}/deactivate', [UserController::class, 'deactivate'])
+    ->name('users.deactivate');
+
+    Route::patch('/users/{user}/reactivate', [UserController::class, 'reactivate'])
+    ->name('users.reactivate');
 
 });

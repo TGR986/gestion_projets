@@ -19,6 +19,11 @@
         'en_revision' => 'bg-amber-100 text-amber-800 ring-amber-200',
         'a_corriger' => 'bg-orange-100 text-orange-800 ring-orange-200',
         'archive' => 'bg-slate-100 text-slate-700 ring-slate-200',
+
+        'validation_technique' => 'bg-green-100 text-green-800 ring-green-200',
+        'validation_administrative' => 'bg-green-100 text-green-800 ring-green-200',
+        'validation_financiere' => 'bg-green-100 text-green-800 ring-green-200',
+        'refus' => 'bg-red-100 text-red-800 ring-red-200',
     ];
 
     $pretty = [
@@ -32,6 +37,10 @@
         'en_revision' => 'En révision',
         'a_corriger' => 'À corriger',
         'archive' => 'Archivé',
+        'validation_technique' => 'Validation technique',
+        'validation_administrative' => 'Validation administrative',
+        'validation_financiere' => 'Validation financière',
+        'refus' => 'Refus',
     ];
 
     $badgeClass = $map[$label] ?? 'bg-gray-100 text-gray-800 ring-gray-200';

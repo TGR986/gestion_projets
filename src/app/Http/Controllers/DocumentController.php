@@ -7,6 +7,8 @@ use App\Models\ProjetEtape;
 use App\Models\Document;
 use App\Models\DocumentVersion;
 use App\Models\TypeDocument;
+use App\Models\DocumentVersionValidation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,8 @@ class DocumentController extends Controller
 
         $document = $version->document;
         abort_unless($document, 404);
+
+        $this->authorize('download', $document);
 
         $relativePath = ltrim((string) $version->chemin_fichier, '/');
 
@@ -60,7 +64,15 @@ class DocumentController extends Controller
 
         abort_unless($etape->projet_id === $projet->id, 404);
 
-        $typesDocuments = TypeDocument::orderBy('libelle')->get();
+        $this->authorize('createForEtape', Document::class);
+
+        $user = auth()->user();
+
+        $typesDocuments = TypeDocument::allowedForUpload($user)->get();
+
+        if (!$user->isAdmin() && $typesDocuments->isEmpty()) {
+            abort(403, 'Vous n\'avez pas le droit d\'ajouter un document.');
+        }
 
         return view('documents.create', compact('projet', 'etape', 'typesDocuments'));
     }
@@ -77,6 +89,15 @@ class DocumentController extends Controller
             'type_document_id' => ['required', 'exists:types_documents,id'],
             'fichier' => ['required', 'file', 'max:10240'],
         ]);
+
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        abort_unless(
+            $user->canUploadTypeDocument((int) $data['type_document_id']),
+            403
+        );
 
         $fichier = $request->file('fichier');
 
@@ -233,5 +254,63 @@ class DocumentController extends Controller
         return redirect()
             ->route('projets.etapes.show', [$projetId, $etapeId])
             ->with('success', 'Document supprimé avec succès.');
+    }
+
+    public function validerVersion(Request $request, DocumentVersion $version)
+    {
+        abort_unless(Auth::check(), 403);
+
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        $validated = $request->validate([
+            'validation_action' => ['required', 'in:validation_technique,validation_administrative,validation_financiere,refus'],
+            'commentaire_validation' => ['nullable', 'string', 'max:3000'],
+        ]);
+
+        $validationAction = $validated['validation_action'];
+
+        if (
+            $validationAction === 'refus'
+            && blank($validated['commentaire_validation'] ?? null)
+        ) {
+            return back()
+                ->withErrors([
+                    'commentaire_validation' => 'Le commentaire est obligatoire en cas de refus.',
+                ])
+                ->withInput();
+        }
+
+        // Sécurité métier :
+        // - admin : tout autorisé
+        // - non-admin : seulement les validations explicitement permises
+        if (! $user->isAdmin()) {
+            if ($validationAction === 'refus') {
+                abort(403, 'Vous n\'êtes pas autorisé à refuser cette version.');
+            }
+
+            abort_unless(
+                $user->hasValidationPermission($validationAction),
+                403,
+                'Vous n\'êtes pas autorisé à effectuer cette validation.'
+            );
+        }
+
+        DocumentVersionValidation::updateOrCreate(
+            [
+                'document_version_id' => $version->id,
+                'type_validation' => $validationAction,
+            ],
+            [
+                'commentaire' => $validationAction === 'refus'
+                    ? $validated['commentaire_validation']
+                    : null,
+                'valide_par' => Auth::id(),
+                'date_validation' => now(),
+            ]
+        );
+
+        return back()->with('success', 'Validation enregistrée pour cette version.');
     }
 }

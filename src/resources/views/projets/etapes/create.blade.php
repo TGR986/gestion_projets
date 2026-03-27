@@ -1,28 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page>
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900">
-                        {{ !empty($parentId) ? 'Ajouter une sous-étape' : 'Ajouter une étape' }}
-                    </h2>
-                    <p class="mt-1 text-sm text-gray-600">
-                        Créez une étape ou une sous-étape pour ce projet.
-                    </p>
-                </div>
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">
+                {{ !empty($parentId) ? 'Ajouter une sous-étape' : 'Ajouter une étape' }}
+            </h2>
 
-                <x-ui.button
-                    :href="!empty($parentId)
-                        ? route('projets.etapes.show', [$projet, $parentId])
-                        : route('projets.show', $projet)"
-                    variant="ghost"
-                >
-                    {{ !empty($parentId) ? '← Retour à l’étape' : '← Retour au projet' }}
-                </x-ui.button>
-            </div>
-        </x-ui.page>
+            <a
+                href="{{ !empty($parentId)
+                    ? route('projets.etapes.show', [$projet, $parentId])
+                    : route('projets.show', $projet) }}"
+                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+                {{ !empty($parentId) ? '← Retour à l’étape' : '← Retour au projet' }}
+            </a>
+        </div>
     </x-slot>
-
+    
     <div class="py-8">
         <x-ui.page size="form">
             <x-ui.card title="Projet : {{ $projet->intitule }}">

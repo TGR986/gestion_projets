@@ -59,11 +59,11 @@ class ProjetController extends Controller
             'intitule' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type_projet' => 'nullable|string|max:100',
+            'statut_global' => 'required|in:brouillon,en_preparation,en_cours,termine,abandonne',
             'date_debut_prevue' => 'nullable|date',
             'date_fin_prevue' => 'nullable|date|after_or_equal:date_debut_prevue',
         ]);
 
-        $validated['statut_global'] = 'brouillon';
         $validated['cree_par'] = auth()->id();
 
         Projet::create($validated);

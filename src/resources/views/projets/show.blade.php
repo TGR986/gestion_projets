@@ -54,7 +54,7 @@
                         <thead class="bg-gray-50">
                             <tr class="text-xs font-semibold uppercase tracking-wider text-gray-500">
                                 <th class="px-4 py-3 text-center">Ordre</th>
-                                <th class="px-4 py-3 text-center">Étape modèle</th>
+                                <th class="px-4 py-3 text-center">Étape</th>
                                 <th class="px-4 py-3 text-center">Titre personnalisé</th>
                                 <th class="px-4 py-3 text-center">Statut</th>
                                 <th class="px-4 py-3 text-center">Date ouverture</th>
@@ -92,8 +92,17 @@
                                         {{ $etape->titre_personnalise ?: '—' }}
                                     </td>
 
-                                    <td class="px-4 py-4 text-center">
-                                        <x-ui.badge :value="$etape->statut" />
+                                   <td class="px-4 py-4 text-center">
+                                        <div class="space-y-2">
+                                            <x-ui.badge :value="$etape->statut" />
+
+                                            @if($etape->statut === 'refusee' && $etape->motif_refus)
+                                                <div class="mx-auto max-w-xs rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left text-xs text-red-800">
+                                                    <span class="font-semibold">Motif :</span><br>
+                                                    {{ $etape->motif_refus }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
 
                                     <td class="px-4 py-4 text-center text-gray-700">
@@ -109,51 +118,54 @@
                                     </td>
 
                                     <td class="px-4 py-4 text-center">
-                                        <div class="flex flex-wrap justify-center gap-2">
-                                            @can('changerStatut', $etape)
-                                                @if($etape->statut === 'a_faire')
-                                                    @if(!$etapePrecedente || $etapePrecedente->statut === 'validee')
-                                                        <form method="POST" action="{{ route('projets.etapes.action', [$projet, $etape]) }}">
-                                                            @csrf
-                                                            <input type="hidden" name="action" value="demarrer">
-                                                            <x-ui.button type="submit" size="sm" variant="primary">
-                                                                Démarrer
-                                                            </x-ui.button>
-                                                        </form>
-                                                    @endif
-                                                @endif
+                                        @can('changerStatut', $etape)
+                                            @php
+                                                $actionsDisponibles = [];
 
-                                                @if($etape->statut === 'en_cours')
-                                                    <form method="POST" action="{{ route('projets.etapes.action', [$projet, $etape]) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="action" value="soumettre">
-                                                        <x-ui.button type="submit" size="sm" variant="secondary">
-                                                            Soumettre
-                                                        </x-ui.button>
-                                                    </form>
-                                                @endif
+                                                if ($etape->statut === 'a_faire') {
+                                                    if (!$etapePrecedente || $etapePrecedente->statut === 'validee') {
+                                                        $actionsDisponibles['demarrer'] = 'Démarrer';
+                                                    }
+                                                }
 
-                                                @if($etape->statut === 'en_attente_validation')
-                                                    <form method="POST" action="{{ route('projets.etapes.action', [$projet, $etape]) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="action" value="valider">
-                                                        <x-ui.button type="submit" size="sm" variant="success">
-                                                            Valider
-                                                        </x-ui.button>
-                                                    </form>
+                                                if ($etape->statut === 'en_cours') {
+                                                    $actionsDisponibles['soumettre'] = 'Soumettre';
+                                                }
 
-                                                    <form method="POST" action="{{ route('projets.etapes.action', [$projet, $etape]) }}">
-                                                        @csrf
-                                                        <input type="hidden" name="action" value="refuser">
-                                                        <x-ui.button type="submit" size="sm" variant="danger">
-                                                            Refuser
-                                                        </x-ui.button>
-                                                    </form>
-                                                @endif
+                                                if ($etape->statut === 'en_attente_validation') {
+                                                    $actionsDisponibles['valider'] = 'Valider';
+                                                    $actionsDisponibles['refuser'] = 'Refuser';
+                                                }
+                                            @endphp
+
+                                            @if(!empty($actionsDisponibles))
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route('projets.etapes.action', [$projet, $etape]) }}"
+                                                    class="inline-block"
+                                                    onsubmit="event.stopPropagation();"
+                                                >
+                                                    @csrf
+
+                                                    <input type="hidden" name="action" class="js-etape-action-input">
+                                                    <input type="hidden" name="motif_refus" class="js-etape-motif-input">
+
+                                                    <select
+                                                        class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 js-etape-action-select"
+                                                        data-etape-id="{{ $etape->id }}"
+                                                    >
+                                                        <option value="">Actions...</option>
+                                                        @foreach($actionsDisponibles as $value => $label)
+                                                            <option value="{{ $value }}">{{ $label }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </form>
                                             @else
                                                 <span class="text-sm text-gray-400">—</span>
-                                            @endcan
-                                        </div>
+                                            @endif
+                                        @else
+                                            <span class="text-sm text-gray-400">—</span>
+                                        @endcan
                                     </td>
 
                                     <td class="px-4 py-4 text-center min-w-[220px]">
@@ -249,8 +261,6 @@
                                 <th class="px-4 py-3 text-left">Nom</th>
                                 <th class="px-4 py-3 text-left">Email</th>
                                 <th class="px-4 py-3 text-left">Fonction</th>
-                                <th class="px-4 py-3 text-center">Chef de projet</th>
-                                <th class="px-4 py-3 text-center">Actif</th>
                                 <th class="px-4 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
@@ -271,32 +281,21 @@
                                     </td>
 
                                     <td class="px-4 py-4 text-center">
-                                        @if($participant->est_chef_projet)
-                                            <x-ui.badge value="validee">Oui</x-ui.badge>
-                                        @else
-                                            <span class="text-sm text-gray-500">Non</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-4 text-center">
-                                        @if($participant->actif)
-                                            <x-ui.badge value="en_cours">Oui</x-ui.badge>
-                                        @else
-                                            <span class="text-sm text-gray-500">Non</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-4 text-center">
                                         @can('update', $projet)
-                                            <form method="POST"
-                                                  action="{{ route('projets.participants.destroy', [$projet, $participant]) }}"
-                                                  onsubmit="return confirm('Retirer ce participant ?');">
+                                            <form
+                                                method="POST"
+                                                action="{{ route('projets.participants.destroy', [$projet, $participant]) }}"
+                                                class="inline-block js-participant-remove-form"
+                                            >
                                                 @csrf
                                                 @method('DELETE')
 
-                                                <x-ui.button type="submit" size="sm" variant="danger">
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-red-600 js-participant-remove-btn"
+                                                >
                                                     Retirer
-                                                </x-ui.button>
+                                                </button>
                                             </form>
                                         @else
                                             <span class="text-sm text-gray-400">—</span>
@@ -310,4 +309,188 @@
             </x-ui.card>
         </div>
     </div>
+    <div
+        id="workflow-action-modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4"
+    >
+        <div class="w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+            <div class="border-b px-6 py-4">
+                <h3 id="workflow-action-title" class="text-lg font-semibold text-gray-900">
+                    Confirmer l’action
+                </h3>
+                <p id="workflow-action-text" class="mt-1 text-sm text-gray-600">
+                    Voulez-vous confirmer cette action ?
+                </p>
+            </div>
+
+            <div class="px-6 py-4">
+                <div id="workflow-refus-wrapper" class="hidden">
+                    <label for="workflow-refus-motif" class="block text-sm font-medium text-gray-700">
+                        Motif du refus
+                    </label>
+                    <textarea
+                        id="workflow-refus-motif"
+                        rows="5"
+                        class="mt-2 w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                        placeholder="Expliquez les motifs du refus..."
+                    ></textarea>
+                    <p class="mt-2 text-xs text-gray-500">
+                        Ce commentaire sera enregistré avec l’étape.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t px-6 py-4">
+                <button
+                    type="button"
+                    id="workflow-action-cancel"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    type="button"
+                    id="workflow-action-confirm"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                    Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('workflow-action-modal');
+        const modalTitle = document.getElementById('workflow-action-title');
+        const modalText = document.getElementById('workflow-action-text');
+        const refusWrapper = document.getElementById('workflow-refus-wrapper');
+        const refusTextarea = document.getElementById('workflow-refus-motif');
+        const cancelBtn = document.getElementById('workflow-action-cancel');
+        const confirmBtn = document.getElementById('workflow-action-confirm');
+
+        let currentForm = null;
+        let currentAction = null;
+        let currentSelect = null;
+        let currentMode = null; // 'etape' ou 'participant'
+
+        function openModal(config) {
+            currentMode = config.mode;
+            currentForm = config.form ?? null;
+            currentAction = config.action ?? null;
+            currentSelect = config.select ?? null;
+
+            modalTitle.textContent = config.title ?? 'Confirmer l’action';
+            modalText.textContent = config.text ?? 'Voulez-vous confirmer cette action ?';
+            confirmBtn.textContent = config.confirmLabel ?? 'Confirmer';
+
+            refusTextarea.value = '';
+            refusWrapper.classList.add('hidden');
+
+            if (config.showRefus === true) {
+                refusWrapper.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+            refusTextarea.value = '';
+
+            if (currentSelect) {
+                currentSelect.value = '';
+            }
+
+            currentForm = null;
+            currentAction = null;
+            currentSelect = null;
+            currentMode = null;
+
+            modalTitle.textContent = 'Confirmer l’action';
+            modalText.textContent = 'Voulez-vous confirmer cette action ?';
+            confirmBtn.textContent = 'Confirmer';
+            refusWrapper.classList.add('hidden');
+        }
+
+        // Actions des étapes
+        document.querySelectorAll('.js-etape-action-select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                const action = this.value;
+
+                if (!action) {
+                    return;
+                }
+
+                let label = action;
+                if (action === 'demarrer') label = 'démarrer';
+                if (action === 'soumettre') label = 'soumettre';
+                if (action === 'valider') label = 'valider';
+                if (action === 'refuser') label = 'refuser';
+
+                openModal({
+                    mode: 'etape',
+                    form: this.closest('form'),
+                    action: action,
+                    select: this,
+                    title: 'Confirmer l’action',
+                    text: `Voulez-vous confirmer l’action : ${label} ?`,
+                    confirmLabel: 'Confirmer',
+                    showRefus: action === 'refuser',
+                });
+            });
+        });
+
+        // Retrait des participants
+        document.querySelectorAll('.js-participant-remove-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                openModal({
+                    mode: 'participant',
+                    form: this.closest('form'),
+                    title: 'Retirer le participant',
+                    text: 'Voulez-vous vraiment retirer ce participant du projet ?',
+                    confirmLabel: 'Retirer',
+                    showRefus: false,
+                });
+            });
+        });
+
+        cancelBtn.addEventListener('click', function () {
+            closeModal();
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        confirmBtn.addEventListener('click', function () {
+            if (!currentForm || !currentMode) {
+                closeModal();
+                return;
+            }
+
+            if (currentMode === 'etape') {
+                if (currentAction === 'refuser' && !refusTextarea.value.trim()) {
+                    alert('Le motif du refus est obligatoire.');
+                    refusTextarea.focus();
+                    return;
+                }
+
+                currentForm.querySelector('.js-etape-action-input').value = currentAction;
+                currentForm.querySelector('.js-etape-motif-input').value = refusTextarea.value.trim();
+                currentForm.submit();
+                return;
+            }
+
+            if (currentMode === 'participant') {
+                currentForm.submit();
+            }
+        });
+    });
+    </script>
 </x-app-layout>

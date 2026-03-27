@@ -123,39 +123,74 @@ class EtapeController extends Controller
 
         $data = $request->validate([
             'action' => ['required', 'in:demarrer,soumettre,valider,refuser'],
+            'motif_refus' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        switch ($data['action']) {
+        $action = $data['action'];
+
+        // 🔴 Refus = motif obligatoire
+        if ($action === 'refuser' && empty(trim($data['motif_refus'] ?? ''))) {
+            return back()
+                ->withErrors(['motif_refus' => 'Le motif du refus est obligatoire.'])
+                ->withInput();
+        }
+
+        switch ($action) {
+
             case 'demarrer':
-                if ($etape->statut === 'a_faire') {
-                    $etape->statut = 'en_cours';
+                if ($etape->statut !== 'a_faire') {
+                    return back()->with('error', 'Action impossible.');
                 }
+
+                $etape->update([
+                    'statut' => 'en_cours',
+                    'date_ouverture' => now(),
+                    'motif_refus' => null,
+                ]);
                 break;
+
 
             case 'soumettre':
-                if ($etape->statut === 'en_cours') {
-                    $etape->statut = 'en_attente_validation';
+                if ($etape->statut !== 'en_cours') {
+                    return back()->with('error', 'Action impossible.');
                 }
+
+                $etape->update([
+                    'statut' => 'en_attente_validation',
+                ]);
                 break;
+
 
             case 'valider':
-                if ($etape->statut === 'en_attente_validation') {
-                    $etape->statut = 'validee';
+                if ($etape->statut !== 'en_attente_validation') {
+                    return back()->with('error', 'Action impossible.');
                 }
+
+                $etape->update([
+                    'statut' => 'validee',
+                    'date_cloture' => now(),
+                    'validee_par' => auth()->id(),
+                    'motif_refus' => null,
+                ]);
                 break;
 
+
             case 'refuser':
-                if ($etape->statut === 'en_attente_validation') {
-                    $etape->statut = 'en_cours';
+                if ($etape->statut !== 'en_attente_validation') {
+                    return back()->with('error', 'Action impossible.');
                 }
+
+                $etape->update([
+                    'statut' => 'refusee',
+                    'motif_refus' => $data['motif_refus'],
+                    'validee_par' => auth()->id(),
+                ]);
                 break;
         }
 
-        $etape->save();
-
         return redirect()
             ->route('projets.show', $projet)
-            ->with('success', 'Statut mis à jour.');
+            ->with('success', 'Statut mis à jour avec succès.');
     }
 
     public function show(Projet $projet, ProjetEtape $etape)
@@ -175,6 +210,9 @@ class EtapeController extends Controller
                 'documents.versionCourante',
                 'documents.commentaires',
                 'documents.versions.deposant',
+
+                'documents.versions.validations',
+                'documents.versions.validations.validateur',
 
                 'commentaires.auteur',
             ]);

@@ -1,21 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page>
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900">
-                        Créer un projet
-                    </h2>
-                    <p class="mt-1 text-sm text-gray-600">
-                        Renseignez les informations pour créer un nouveau projet.
-                    </p>
-                </div>
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">
+                Créer un projet
+            </h2>
 
-                <x-ui.button :href="route('projets.index')" variant="ghost">
-                    ← Retour
-                </x-ui.button>
-            </div>
-        </x-ui.page>
+            <a
+                href="{{ route('projets.index') }}"
+                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+                ← Retour
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-8">

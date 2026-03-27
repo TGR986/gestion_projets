@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DocumentVersion extends Model
 {
@@ -22,6 +23,10 @@ class DocumentVersion extends Model
         'depose_par',
         'commentaire_version',
         'est_version_courante',
+        'type_validation',
+        'commentaire_validation',
+        'valide_par',
+        'date_validation',
     ];
 
     public $timestamps = true;
@@ -29,13 +34,25 @@ class DocumentVersion extends Model
     const CREATED_AT = 'date_depot';
     const UPDATED_AT = null;
 
-    public function document()
+    public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class, 'document_id');
     }
 
-    public function deposant()
+    public function deposant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'depose_par');
+    }
+
+    public function validateur(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'valide_par');
+    }
+
+    public function validations(): HasMany
+    {
+        return $this->hasMany(DocumentVersionValidation::class, 'document_version_id')
+            ->orderBy('date_validation')
+            ->orderBy('id');
     }
 }

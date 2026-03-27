@@ -37,7 +37,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-center">Ordre</th>
-                                <th class="px-4 py-3 text-center">Étape modèle</th>
+                                <th class="px-4 py-3 text-center">Sous étape</th>
                                 <th class="px-4 py-3 text-center">Titre</th>
                                 <th class="px-4 py-3 text-center">Statut</th>
                                 <th class="p-3 text-center w-40">Actions</th>
