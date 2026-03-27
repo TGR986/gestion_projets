@@ -31,7 +31,7 @@
             >
                 @if($projets->isEmpty())
                     <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-                        <p class="text-sm text-gray-600">Aucun projet pour le moment.</p>
+                        <p class="text-sm text-gray-600">Aucun projet auquel vous êtes affecté.</p>
 
                         <div class="mt-4">
                             <x-ui.button :href="route('projets.create')" variant="primary">

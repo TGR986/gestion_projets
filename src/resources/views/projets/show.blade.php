@@ -269,22 +269,22 @@
                             @foreach($projet->participants as $participant)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-4 text-gray-900">
-                                        {{ $participant->utilisateur?->name ?? '—' }}
+                                        {{ $participant->name ?? '—' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-gray-700">
-                                        {{ $participant->utilisateur?->email ?? '—' }}
+                                        {{ $participant->email ?? '—' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-gray-700">
-                                        {{ $participant->fonction_projet ?: '—' }}
+                                        {{ $participant->pivot->fonction_projet ?? '—' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-center">
                                         @can('update', $projet)
                                             <form
                                                 method="POST"
-                                                action="{{ route('projets.participants.destroy', [$projet, $participant]) }}"
+                                                action="{{ route('projets.participants.destroy', [$projet, $participant->pivot->id]) }}"
                                                 class="inline-block js-participant-remove-form"
                                             >
                                                 @csrf

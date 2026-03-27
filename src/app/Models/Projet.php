@@ -34,7 +34,8 @@ class Projet extends Model
 
     public function participants()
     {
-        return $this->hasMany(ProjetUtilisateur::class, 'projet_id');
+        return $this->belongsToMany(User::class, 'projet_utilisateurs', 'projet_id', 'utilisateur_id')
+            ->withPivot(['id', 'fonction_projet', 'est_chef_projet', 'actif', 'date_affectation']);
     }
 
     public function etapes()

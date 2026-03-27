@@ -14,9 +14,17 @@ class ProjetController extends Controller
 {
     public function index()
     {
-        $this->authorize('viewAny', Projet::class);
+        $user = auth()->user();
 
-        $projets = Projet::with('createur')->get();
+        $projets = Projet::query()
+            ->when(!$user->estAdmin(), function ($query) use ($user) {
+                $query->whereHas('participants', function ($subQuery) use ($user) {
+                    $subQuery->where('users.id', $user->id)
+                        ->where('projet_utilisateurs.actif', 1);
+                });
+            })
+            ->orderByDesc('id')
+            ->get();
 
         return view('projets.index', compact('projets'));
     }
@@ -27,7 +35,7 @@ class ProjetController extends Controller
 
         $projet->load([
             'createur',
-            'participants.utilisateur',
+            'participants',
             'etapes' => function ($query) {
                 $query->with([
                     'etapeModele',
@@ -203,6 +211,7 @@ class ProjetController extends Controller
 
     public function startEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('changerStatut', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -219,6 +228,7 @@ class ProjetController extends Controller
 
     public function submitEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('changerStatut', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -234,6 +244,7 @@ class ProjetController extends Controller
 
     public function validateEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('changerStatut', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -251,6 +262,7 @@ class ProjetController extends Controller
 
     public function rejectEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('changerStatut', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -267,6 +279,7 @@ class ProjetController extends Controller
 
     public function actionEtape(Request $request, Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('changerStatut', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -351,6 +364,7 @@ class ProjetController extends Controller
 
     public function editEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('update', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -364,6 +378,7 @@ class ProjetController extends Controller
 
     public function updateEtape(Request $request, Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('update', $etape);
 
         if ($etape->projet_id !== $projet->id) {
@@ -388,6 +403,7 @@ class ProjetController extends Controller
 
     public function destroyEtape(Projet $projet, ProjetEtape $etape)
     {
+        $this->authorize('view', $projet);
         $this->authorize('delete', $etape);
 
         if ($etape->projet_id !== $projet->id) {

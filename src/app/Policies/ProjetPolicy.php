@@ -32,7 +32,14 @@ class ProjetPolicy
      */
     public function view(User $user, Projet $projet): bool
     {
-        return true;
+        if ($user->estAdmin()) {
+            return true;
+        }
+
+        return $projet->participants()
+            ->where('users.id', $user->id)
+            ->where('projet_utilisateurs.actif', 1)
+            ->exists();
     }
 
     /**
@@ -45,11 +52,18 @@ class ProjetPolicy
 
     public function update(User $user, Projet $projet): bool
     {
-        return false;
+        if ($user->estAdmin()) {
+            return true;
+        }
+
+        return $projet->participants()
+            ->where('users.id', $user->id)
+            ->where('projet_utilisateurs.actif', 1)
+            ->exists();
     }
 
     public function delete(User $user, Projet $projet): bool
     {
-        return false;
+        return $user->estAdmin();
     }
 }

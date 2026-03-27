@@ -129,4 +129,22 @@ class User extends Authenticatable
     {
         return (bool) $this->is_active;
     }
+
+    public function projetsParticipants()
+    {
+        return $this->belongsToMany(Projet::class, 'projet_utilisateurs', 'utilisateur_id', 'projet_id')
+            ->withPivot(['id', 'fonction_projet', 'est_chef_projet', 'actif', 'date_affectation']);
+    }
+
+    public function participeAuProjet(int $projetId): bool
+    {
+        if ($this->estAdmin()) {
+            return true;
+        }
+
+        return $this->projetsParticipants()
+            ->where('projets.id', $projetId)
+            ->wherePivot('actif', 1)
+            ->exists();
+    }
 }
