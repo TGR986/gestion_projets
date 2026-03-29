@@ -136,16 +136,26 @@
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
                                         <p class="text-sm font-semibold text-gray-900">
-                                            {{ $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
+                                            {{ $commentaire->user?->name ?? $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
                                         </p>
                                         <p class="text-xs text-gray-500">
-                                            {{ $commentaire->user?->name ?? 'Utilisateur inconnu' }}
+                                            {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
                                         </p>
-                                        @if(is_null($commentaire->projet_etape_id))
-                                            <span class="badge">Projet</span>
-                                        @else
-                                            <span class="badge">Étape</span>
-                                        @endif
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            @if($commentaire->projet_etape_id)
+                                                <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700">
+                                                    {{ $commentaire->etape?->parent_id ? 'Sous-étape' : 'Étape' }}
+                                                </span>
+
+                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                    {{ $commentaire->etape?->titre_personnalise ?: ($commentaire->etape?->etapeModele?->libelle ?? 'Étape') }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                    Projet
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
 
                                     <div class="flex items-center gap-3 shrink-0">
