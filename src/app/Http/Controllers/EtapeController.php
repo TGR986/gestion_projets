@@ -217,7 +217,12 @@ class EtapeController extends Controller
                 'commentaires.auteur',
             ]);
 
-            return view('projets.sous_etapes.show', compact('projet', 'etape'));
+            $commentaires = EtapeCommentaire::with(['user', 'etape.etapeModele'])
+                ->where('projet_id', $projet->id)
+                ->latest()
+                ->get();
+
+            return view('projets.sous_etapes.show', compact('projet', 'etape', 'commentaires'));
         }
 
         // CAS 2 : étape principale
@@ -228,7 +233,12 @@ class EtapeController extends Controller
             'enfants.validateur',
         ]);
 
-        return view('projets.etapes.show', compact('projet', 'etape'));
+        $commentaires = EtapeCommentaire::with(['user', 'etape.etapeModele'])
+            ->where('projet_id', $projet->id)
+            ->latest()
+            ->get();
+
+        return view('projets.etapes.show', compact('projet', 'etape', 'commentaires'));
     }
 
     public function storeCommentaire(Request $request, $projetId, $etapeId)
@@ -329,4 +339,5 @@ class EtapeController extends Controller
             ->route('projets.etapes.show', [$projet, $etape])
             ->with('success', 'Commentaire supprimé avec succès.');
     }
+    
 }

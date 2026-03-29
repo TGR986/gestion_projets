@@ -418,24 +418,29 @@
                     </div>
                 </form>
 
-                @if($etape->commentaires->isEmpty())
+               @if($commentaires->isEmpty())
                     <p class="text-sm text-gray-500">Aucun commentaire pour le moment.</p>
                 @else
                     <div class="space-y-4">
-                        @foreach($etape->commentaires as $commentaire)
+                        @foreach($commentaires as $commentaire)
                             <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
                                         <p class="text-sm font-semibold text-gray-900">
-                                            {{ $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
+                                            {{ $commentaire->user?->name ?? 'Utilisateur inconnu' }}
                                         </p>
                                         <p class="text-xs text-gray-500">
-                                            {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
+                                            {{ $commentaire->created_at->format('d/m/Y H:i') }}
                                         </p>
+                                        @if(is_null($commentaire->projet_etape_id))
+                                            <span class="badge">Projet</span>
+                                        @else
+                                            <span class="badge">Étape</span>
+                                        @endif
                                     </div>
 
                                     <div class="flex items-center gap-3 shrink-0">
-                                        @if(auth()->id() === $commentaire->user_id)
+                                        @if($commentaire->projet_etape_id === $etape->id && auth()->id() === $commentaire->user_id)
                                             <a
                                                 href="{{ route('etapes.commentaires.edit', [$projet->id, $etape->id, $commentaire->id]) }}"
                                                 class="text-sm text-blue-600 hover:underline"
@@ -444,7 +449,10 @@
                                             </a>
                                         @endif
 
-                                        @if(auth()->id() === $commentaire->user_id || auth()->user()?->estAdmin())
+                                        @if(
+                                            $commentaire->projet_etape_id === $etape->id
+                                            && (auth()->id() === $commentaire->user_id || auth()->user()?->estAdmin())
+                                        )
                                             <form
                                                 method="POST"
                                                 action="{{ route('etapes.commentaires.destroy', [$projet->id, $etape->id, $commentaire->id]) }}"
