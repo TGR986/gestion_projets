@@ -2,6 +2,23 @@
     <x-slot name="header">
         <div class="flex items-start justify-between gap-4">
             <div>
+                <nav class="text-sm text-gray-500 mb-2" aria-label="Fil d'Ariane">
+                    <ol class="flex flex-wrap items-center gap-2">
+                        <li>
+                            <a
+                                href="{{ route('projets.index') }}"
+                                class="hover:text-gray-700 hover:underline"
+                            >
+                                Projets
+                            </a>
+                        </li>
+                        <li aria-hidden="true" class="text-gray-400">/</li>
+                        <li class="font-medium text-gray-900">
+                            {{ $projet->intitule }}
+                        </li>
+                    </ol>
+                </nav>
+
                 <h2 class="text-xl font-semibold text-gray-900">
                    Projet : {{ $projet->intitule }}
                 </h2>

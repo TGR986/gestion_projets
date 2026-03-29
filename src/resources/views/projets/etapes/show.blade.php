@@ -3,6 +3,23 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <div>
+                    <nav class="mb-2 text-sm text-gray-500" aria-label="Fil d'Ariane">
+                        <ol class="flex flex-wrap items-center gap-2">
+                            <li>
+                                <a
+                                    href="{{ route('projets.show', $projet) }}"
+                                    class="hover:text-gray-700 hover:underline"
+                                >
+                                    {{ $projet->intitule }}
+                                </a>
+                            </li>
+                            <li aria-hidden="true" class="text-gray-400">/</li>
+                            <li class="font-medium text-gray-900">
+                                {{ $etape->titre_personnalise ?: ($etape->etapeModele?->libelle ?? 'Étape') }}
+                            </li>
+                        </ol>
+                    </nav>
+                    
                     <h2 class="text-xl font-semibold text-gray-900">
                         Étape : {{ $etape->etapeModele?->libelle ?? '—' }}
                     </h2>
