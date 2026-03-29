@@ -63,6 +63,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projets/{projet}/etapes/{etape}', [EtapeController::class, 'show'])
         ->name('projets.etapes.show');
 
+    Route::post('/projets/{projet}/commentaires', [ProjetController::class, 'storeCommentaireProjet'])
+    ->name('projets.commentaires.store');
+
     Route::post('/projets/{projet}/etapes/{etape}/commentaires', [EtapeController::class, 'storeCommentaire'])
     ->name('etapes.commentaires.store');
 

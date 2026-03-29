@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\ProjetUtilisateur;
 use App\Models\ProjetEtape;
+use App\Models\EtapeCommentaire;
 
 class Projet extends Model
 {
@@ -41,5 +42,10 @@ class Projet extends Model
     public function etapes()
     {
         return $this->hasMany(ProjetEtape::class, 'projet_id')->orderBy('ordre_reel');
+    }
+
+    public function commentaires()
+    {
+        return $this->hasMany(EtapeCommentaire::class, 'projet_id')->latest();
     }
 }

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ProjetUtilisateur;
 use App\Models\ProjetEtape;
 use App\Models\EtapeModele;
+use App\Models\EtapeCommentaire;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -48,7 +49,13 @@ class ProjetController extends Controller
             },
         ]);
 
-        return view('projets.show', compact('projet'));
+        // ✅ AJOUT ICI
+        $commentaires = EtapeCommentaire::with('user')
+            ->where('projet_id', $projet->id)
+            ->latest()
+            ->get();
+
+        return view('projets.show', compact('projet', 'commentaires'));
     }
 
     public function create()
@@ -415,5 +422,25 @@ class ProjetController extends Controller
         return redirect()
             ->route('projets.show', $projet)
             ->with('success', 'Étape supprimée avec succès.');
+    }
+
+    public function storeCommentaireProjet(Request $request, Projet $projet)
+    {
+        $this->authorize('view', $projet);
+
+        $request->validate([
+            'contenu' => ['required', 'string'],
+        ]);
+
+       EtapeCommentaire::create([
+        'projet_id' => $projet->id,
+        'projet_etape_id' => null,
+        'user_id' => auth()->id(),
+        'contenu' => $request->contenu,
+    ]);
+
+        return redirect()
+            ->route('projets.show', $projet)
+            ->with('success', 'Commentaire ajouté.');
     }
 }

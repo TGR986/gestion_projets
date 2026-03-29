@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\EtapeCommentaire;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjetEtape extends Model
@@ -59,7 +60,6 @@ class ProjetEtape extends Model
 
     public function commentaires()
     {
-        return $this->hasMany(EtapeCommentaire::class, 'projet_etape_id')
-            ->latest();
+        return $this->hasMany(EtapeCommentaire::class, 'projet_etape_id')->latest();
     }
 }

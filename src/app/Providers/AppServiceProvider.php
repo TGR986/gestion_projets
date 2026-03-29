@@ -10,7 +10,7 @@ use App\Policies\EtapePolicy;
 use App\Policies\DocumentPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
-class AuthServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     protected $policies = [
         Projet::class => ProjetPolicy::class,

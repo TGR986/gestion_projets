@@ -307,6 +307,83 @@
                     </x-ui.table>
                 @endif
             </x-ui.card>
+
+            <x-ui.card
+                title="Commentaires"
+                subtitle="Commentaires liés au projet, aux étapes et aux sous-étapes."
+            >
+                <form
+                    method="POST"
+                    action="{{ route('projets.commentaires.store', $projet) }}"
+                    class="mb-6 space-y-3"
+                >
+                    @csrf
+
+                    <div>
+                        <label for="contenu" class="block text-sm font-medium text-gray-700">
+                            Nouveau commentaire
+                        </label>
+                        <textarea
+                            name="contenu"
+                            id="contenu"
+                            rows="4"
+                            class="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            required
+                        >{{ old('contenu') }}</textarea>
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            class="inline-flex items-center rounded-lg bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                        >
+                            + commentaire
+                        </button>
+                    </div>
+                </form>
+
+                @if($projet->commentaires->isEmpty())
+                    <p class="text-sm text-gray-500">Aucun commentaire pour le moment.</p>
+                @else
+                    <div class="space-y-4">
+                        @foreach($commentaires as $commentaire)
+                            <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">
+                                            {{ $commentaire->user?->name ?? $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
+                                        </p>
+
+                                        <p class="text-xs text-gray-500">
+                                            {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
+                                        </p>
+
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            @if($commentaire->projet_etape_id)
+                                                <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700">
+                                                    {{ $commentaire->etape?->parent_id ? 'Sous-étape' : 'Étape' }}
+                                                </span>
+
+                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                    {{ $commentaire->etape?->titre_personnalise ?: ($commentaire->etape?->etapeModele?->libelle ?? 'Étape') }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                    Projet
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 text-sm leading-6 text-gray-700">
+                                    {!! nl2br(e($commentaire->contenu)) !!}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </x-ui.card>
         </div>
     </div>
     <div
