@@ -1,6 +1,5 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <nav class="mb-2 text-sm text-gray-500" aria-label="Fil d'Ariane">
@@ -32,7 +31,6 @@
                     ← Retour au projet
                 </x-ui.button>
             </div>
-        </div>
     </x-slot>
 
     <div class="py-8">

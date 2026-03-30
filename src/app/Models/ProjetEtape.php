@@ -58,6 +58,17 @@ class ProjetEtape extends Model
             ->orderByDesc('date_creation');
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($etape) {
+            $etape->enfants()->delete();
+            $etape->documents()->delete();
+            $etape->commentaires()->delete();
+        });
+    }
+
     public function commentaires()
     {
         return $this->hasMany(EtapeCommentaire::class, 'projet_etape_id')->latest();
