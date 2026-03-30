@@ -34,7 +34,7 @@
                         >{{ old('contenu', $commentaire->contenu) }}</textarea>
                     </div>
 
-                    <div class="flex items-center justify-between">
+                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <a
                             href="{{ route('projets.etapes.show', [$projet->id, $etape->id]) }}"
                             class="text-sm text-gray-600 hover:underline"

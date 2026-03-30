@@ -18,6 +18,33 @@
     font-weight: 600;
 }
 
+@media (max-width: 640px) {
+    .table-projet {
+        font-size: 0.875rem;
+    }
+
+    .table-projet th,
+    .table-projet td {
+        padding: 0.625rem 0.5rem;
+        white-space: nowrap;
+    }
+
+    button,
+    [type='button'],
+    [type='submit'],
+    .btn,
+    a.inline-flex {
+        min-height: 44px;
+    }
+
+    .card-actions,
+    .form-actions {
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: 1fr;
+    }
+}
+
 /* @layer components {
     a {
         @apply inline-flex items-center rounded-md bg-slate-800 px-4 py-2 
