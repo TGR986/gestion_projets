@@ -116,7 +116,7 @@
                                                         if (!value) return;
 
                                                         if (value === 'delete') {
-                                                            if (confirm('Supprimer ce projet ?')) {
+                                                            if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
                                                                 this.closest('td').querySelector('.delete-projet-form-{{ $projet->id }}').submit();
                                                             } else {
                                                                 this.selectedIndex = 0;

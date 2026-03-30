@@ -238,7 +238,7 @@
                                                 <form method="POST"
                                                     action="{{ route('projets.etapes.destroy', [$projet, $etape]) }}"
                                                     class="delete-etape-form-{{ $etape->id }} hidden"
-                                                    onsubmit="event.stopPropagation(); return confirm ('Supprimer cette étape ?');">
+                                                    onsubmit="event.stopPropagation(); return confirm('Êtes-vous sûr de vouloir supprimer cette étape et toutes ses sous-étapes ?');">
                                                     @csrf
                                                     @method('DELETE')
                                                 </form>

@@ -48,4 +48,21 @@ class Projet extends Model
     {
         return $this->hasMany(EtapeCommentaire::class, 'projet_id')->latest();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($projet) {
+            // Supprimer d'abord les étapes afin de déclencher la suppression en cascade des sous-étapes,
+            // ainsi que des documents et commentaires d'étape liés.
+            $projet->etapes->each->delete();
+
+            // Supprimer les commentaires du projet qui ne sont pas attachés à des étapes.
+            $projet->commentaires()->delete();
+
+            // Détacher les utilisateurs liés au projet.
+            $projet->participants()->detach();
+        });
+    }
 }
