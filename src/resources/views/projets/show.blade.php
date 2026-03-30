@@ -371,29 +371,36 @@
                                             {{ trim(($commentaire->user?->prenom ?? $commentaire->auteur?->prenom ?? '') . ' ' . ($commentaire->user?->name ?? $commentaire->auteur?->name ?? 'Utilisateur inconnu')) }}
                                         </p>
 
-                                        <p class="text-xs text-gray-500">
-                                            {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
-                                        </p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-xs text-gray-500">
+                                                {{ optional($commentaire->created_at)->format('d/m/Y H:i') }}
+                                            </p>
 
-                                        <div class="mt-2 flex flex-wrap gap-2">
-                                            @if($commentaire->projet_etape_id)
-                                                <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700">
-                                                    {{ $commentaire->etape?->parent_id ? 'Sous-étape' : 'Étape' }}
-                                                </span>
+                                            <div class="flex flex-wrap gap-2">
+                                                @if($commentaire->projet_etape_id)
+                                                    <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700">
+                                                        {{ $commentaire->etape?->parent_id ? 'Sous-étape' : 'Étape' }}
+                                                    </span>
 
-                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                                                    {{ $commentaire->etape?->titre_personnalise ?: ($commentaire->etape?->etapeModele?->libelle ?? 'Étape') }}
-                                                </span>
-                                            @else
-                                                <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                                                    Projet
-                                                </span>
-                                            @endif
+                                                    <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                        {{ $commentaire->etape?->titre_personnalise ?: ($commentaire->etape?->etapeModele?->libelle ?? 'Étape') }}
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                                                        Projet
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-2 shrink-0">
+                                <div class="flex justify-between items-start gap-4 mt-3">
+                                    <div class="flex-1 text-sm leading-6 text-gray-700">
+                                        {!! nl2br(e($commentaire->contenu)) !!}
+                                    </div>
+
+                                    <div class="flex items-center gap-2 shrink-0">
                                         @if(auth()->id() === $commentaire->user_id)
                                             <a
                                                 href="{{ $commentaire->projet_etape_id
@@ -425,9 +432,6 @@
                                             </form>
                                         @endif
                                     </div>
-
-                                <div class="mt-3 text-sm leading-6 text-gray-700">
-                                    {!! nl2br(e($commentaire->contenu)) !!}
                                 </div>
                             </div>
                         @endforeach
