@@ -368,7 +368,7 @@
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
                                         <p class="text-sm font-semibold text-gray-900">
-                                            {{ $commentaire->user?->name ?? $commentaire->auteur?->name ?? 'Utilisateur inconnu' }}
+                                            {{ trim(($commentaire->user?->prenom ?? $commentaire->auteur?->prenom ?? '') . ' ' . ($commentaire->user?->name ?? $commentaire->auteur?->name ?? 'Utilisateur inconnu')) }}
                                         </p>
 
                                         <p class="text-xs text-gray-500">

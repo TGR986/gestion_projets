@@ -83,6 +83,26 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date début prévue</label>
+                        <input
+                            type="date"
+                            name="date_debut_prevue"
+                            value="{{ old('date_debut_prevue') }}"
+                            class="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date fin prévue</label>
+                        <input
+                            type="date"
+                            name="date_fin_prevue"
+                            value="{{ old('date_fin_prevue') }}"
+                            class="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        >
+                    </div>
+
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                         <x-ui.button :href="route('projets.index')" variant="ghost">
                             Annuler

@@ -93,7 +93,7 @@
                                     </td>
 
                                     <td class="px-4 py-4 whitespace-nowrap">
-                                        {{ $projet->createur?->name ?: '—' }}
+                                        {{ trim(($projet->createur?->prenom ?? '') . ' ' . ($projet->createur?->name ?? '—')) }}
                                     </td>
 
                                     <td class="px-4 py-4 text-center min-w-[180px]">
