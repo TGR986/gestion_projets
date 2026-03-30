@@ -428,19 +428,86 @@ class ProjetController extends Controller
     {
         $this->authorize('view', $projet);
 
-        $request->validate([
-            'contenu' => ['required', 'string'],
+        $data = $request->validate([
+            'contenu' => ['required', 'string', 'max:5000'],
         ]);
 
        EtapeCommentaire::create([
         'projet_id' => $projet->id,
         'projet_etape_id' => null,
         'user_id' => auth()->id(),
-        'contenu' => $request->contenu,
+        'contenu' => $data['contenu'],
     ]);
 
         return redirect()
             ->route('projets.show', $projet)
             ->with('success', 'Commentaire ajouté.');
+    }
+
+    private function peutModifierCommentaireProjet(EtapeCommentaire $commentaire): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->id === $commentaire->user_id;
+    }
+
+    private function peutSupprimerCommentaireProjet(EtapeCommentaire $commentaire): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && ($user->id === $commentaire->user_id || $user->estAdmin());
+    }
+
+    public function editCommentaireProjet(Projet $projet, $commentaireId)
+    {
+        $this->authorize('view', $projet);
+
+        $commentaire = EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($commentaire->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === null, 404);
+        abort_unless($this->peutModifierCommentaireProjet($commentaire), 403);
+
+        return view('projets.commentaires.edit', compact('projet', 'commentaire'));
+    }
+
+    public function updateCommentaireProjet(Request $request, Projet $projet, $commentaireId)
+    {
+        $this->authorize('view', $projet);
+
+        $commentaire = EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($commentaire->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === null, 404);
+        abort_unless($this->peutModifierCommentaireProjet($commentaire), 403);
+
+        $data = $request->validate([
+            'contenu' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $commentaire->update([
+            'contenu' => $data['contenu'],
+        ]);
+
+        return redirect()
+            ->route('projets.show', $projet)
+            ->with('success', 'Commentaire modifié avec succès.');
+    }
+
+    public function destroyCommentaireProjet(Projet $projet, $commentaireId)
+    {
+        $this->authorize('view', $projet);
+
+        $commentaire = EtapeCommentaire::findOrFail($commentaireId);
+
+        abort_unless($commentaire->projet_id === $projet->id, 404);
+        abort_unless($commentaire->projet_etape_id === null, 404);
+        abort_unless($this->peutSupprimerCommentaireProjet($commentaire), 403);
+
+        $commentaire->delete();
+
+        return redirect()
+            ->route('projets.show', $projet)
+            ->with('success', 'Commentaire supprimé avec succès.');
     }
 }

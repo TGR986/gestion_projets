@@ -393,6 +393,39 @@
                                     </div>
                                 </div>
 
+                                <div class="flex items-center gap-2 shrink-0">
+                                        @if(auth()->id() === $commentaire->user_id)
+                                            <a
+                                                href="{{ $commentaire->projet_etape_id
+                                                    ? route('etapes.commentaires.edit', [$projet->id, $commentaire->projet_etape_id, $commentaire->id])
+                                                    : route('projets.commentaires.edit', [$projet->id, $commentaire->id]) }}"
+                                                class="rounded border border-transparent px-2 py-1 text-xs text-gray-400 transition hover:border-gray-200 hover:text-gray-600"
+                                            >
+                                                modifier
+                                            </a>
+                                        @endif
+
+                                        @if(auth()->id() === $commentaire->user_id || auth()->user()?->estAdmin())
+                                            <form
+                                                method="POST"
+                                                action="{{ $commentaire->projet_etape_id
+                                                    ? route('etapes.commentaires.destroy', [$projet->id, $commentaire->projet_etape_id, $commentaire->id])
+                                                    : route('projets.commentaires.destroy', [$projet->id, $commentaire->id]) }}"
+                                                onsubmit="return confirm('Supprimer ce commentaire ?');"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button
+                                                    type="submit"
+                                                    class="rounded border border-transparent px-2 py-1 text-xs text-gray-400 transition hover:border-gray-200 hover:text-red-600"
+                                                >
+                                                    supprimer
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+
                                 <div class="mt-3 text-sm leading-6 text-gray-700">
                                     {!! nl2br(e($commentaire->contenu)) !!}
                                 </div>

@@ -6,7 +6,7 @@
             <div class="flex items-center gap-6">
                 <a href="{{ route('dashboard') }}"
                    class="text-base sm:text-lg font-semibold tracking-tight whitespace-nowrap">
-                    GestionProjets
+                    InfosProjets-WF
                 </a>
 
                 <div class="hidden md:flex items-center gap-5 text-sm">

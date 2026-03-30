@@ -66,6 +66,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/projets/{projet}/commentaires', [ProjetController::class, 'storeCommentaireProjet'])
     ->name('projets.commentaires.store');
 
+    Route::get('/projets/{projet}/commentaires/{commentaire}/edit', [ProjetController::class, 'editCommentaireProjet'])
+    ->name('projets.commentaires.edit');
+
+    Route::put('/projets/{projet}/commentaires/{commentaire}', [ProjetController::class, 'updateCommentaireProjet'])
+    ->name('projets.commentaires.update');
+
+    Route::delete('/projets/{projet}/commentaires/{commentaire}', [ProjetController::class, 'destroyCommentaireProjet'])
+    ->name('projets.commentaires.destroy');
+    
     Route::post('/projets/{projet}/etapes/{etape}/commentaires', [EtapeController::class, 'storeCommentaire'])
     ->name('etapes.commentaires.store');
 

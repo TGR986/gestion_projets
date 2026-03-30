@@ -453,9 +453,9 @@
                                         @if($commentaire->projet_etape_id === $etape->id && auth()->id() === $commentaire->user_id)
                                             <a
                                                 href="{{ route('etapes.commentaires.edit', [$projet->id, $etape->id, $commentaire->id]) }}"
-                                                class="text-sm text-blue-600 hover:underline"
+                                                class="rounded border border-transparent px-2 py-1 text-xs text-gray-400 transition hover:border-gray-200 hover:text-gray-600"
                                             >
-                                                Modifier
+                                                modifier
                                             </a>
                                         @endif
 
@@ -471,8 +471,11 @@
                                                 @csrf
                                                 @method('DELETE')
 
-                                                <button type="submit" class="text-sm text-red-600 hover:underline">
-                                                    Supprimer
+                                                <button
+                                                    type="submit"
+                                                    class="rounded border border-transparent px-2 py-1 text-xs text-gray-400 transition hover:border-gray-200 hover:text-red-600"
+                                                >
+                                                    supprimer
                                                 </button>
                                             </form>
                                         @endif
